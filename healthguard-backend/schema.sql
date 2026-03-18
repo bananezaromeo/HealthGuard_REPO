@@ -1,5 +1,5 @@
 -- Create Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   user_id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE users (
 );
 
 -- Create Patients table
-CREATE TABLE patients (
+CREATE TABLE IF NOT EXISTS patients (
   patient_id SERIAL PRIMARY KEY,
   user_id INT NOT NULL UNIQUE REFERENCES users(user_id),
   assigned_doctor_id INT REFERENCES users(user_id),
@@ -19,7 +19,7 @@ CREATE TABLE patients (
 );
 
 -- Create Seizure Events table
-CREATE TABLE seizure_events (
+CREATE TABLE IF NOT EXISTS seizure_events (
   event_id SERIAL PRIMARY KEY,
   patient_id INT NOT NULL REFERENCES patients(patient_id),
   timestamp TIMESTAMP NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE seizure_events (
 );
 
 -- Create Cardiac Events table
-CREATE TABLE cardiac_events (
+CREATE TABLE IF NOT EXISTS cardiac_events (
   event_id SERIAL PRIMARY KEY,
   patient_id INT NOT NULL REFERENCES patients(patient_id),
   timestamp TIMESTAMP NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE cardiac_events (
 );
 
 -- Create Prescriptions table
-CREATE TABLE prescriptions (
+CREATE TABLE IF NOT EXISTS prescriptions (
   prescription_id SERIAL PRIMARY KEY,
   doctor_id INT NOT NULL REFERENCES users(user_id),
   patient_id INT NOT NULL REFERENCES patients(patient_id),
@@ -67,7 +67,7 @@ CREATE TABLE prescriptions (
 );
 
 -- Create Alerts table
-CREATE TABLE alerts (
+CREATE TABLE IF NOT EXISTS alerts (
   alert_id SERIAL PRIMARY KEY,
   patient_id INT NOT NULL REFERENCES patients(patient_id),
   alert_type VARCHAR(50) NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE alerts (
 );
 
 -- Create Locations table
-CREATE TABLE locations (
+CREATE TABLE IF NOT EXISTS locations (
   location_id SERIAL PRIMARY KEY,
   patient_id INT NOT NULL REFERENCES patients(patient_id),
   latitude FLOAT NOT NULL,
@@ -89,9 +89,50 @@ CREATE TABLE locations (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create Doctors table
+CREATE TABLE IF NOT EXISTS doctors (
+  doctor_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL UNIQUE REFERENCES users(user_id),
+  specialization VARCHAR(255),
+  license_number VARCHAR(100),
+  hospital_clinic VARCHAR(255),
+  verification_status VARCHAR(50) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Family Members table
+CREATE TABLE IF NOT EXISTS family_members (
+  family_member_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL UNIQUE REFERENCES users(user_id),
+  family_head_id INT REFERENCES users(user_id),
+  relationship VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Pharmacies table
+CREATE TABLE IF NOT EXISTS pharmacies (
+  pharmacy_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL UNIQUE REFERENCES users(user_id),
+  pharmacy_name VARCHAR(255) NOT NULL,
+  province VARCHAR(100),
+  district VARCHAR(100),
+  city_sector VARCHAR(100),
+  contact_name VARCHAR(255),
+  latitude FLOAT,
+  longitude FLOAT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for faster queries
-CREATE INDEX idx_patients_user_id ON patients(user_id);
-CREATE INDEX idx_seizure_events_patient_id ON seizure_events(patient_id);
-CREATE INDEX idx_cardiac_events_patient_id ON cardiac_events(patient_id);
-CREATE INDEX idx_alerts_patient_id ON alerts(patient_id);
-CREATE INDEX idx_locations_patient_id ON locations(patient_id);
+CREATE INDEX IF NOT EXISTS idx_patients_user_id ON patients(user_id);
+CREATE INDEX IF NOT EXISTS idx_seizure_events_patient_id ON seizure_events(patient_id);
+CREATE INDEX IF NOT EXISTS idx_cardiac_events_patient_id ON cardiac_events(patient_id);
+CREATE INDEX IF NOT EXISTS idx_alerts_patient_id ON alerts(patient_id);
+CREATE INDEX IF NOT EXISTS idx_locations_patient_id ON locations(patient_id);
+CREATE INDEX IF NOT EXISTS idx_doctors_user_id ON doctors(user_id);
+CREATE INDEX IF NOT EXISTS idx_family_members_user_id ON family_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_pharmacies_user_id ON pharmacies(user_id);
+CREATE INDEX IF NOT EXISTS idx_pharmacies_location ON pharmacies(district, province);
+CREATE INDEX IF NOT EXISTS idx_prescriptions_doctor_id ON prescriptions(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_prescriptions_pharmacy_id ON prescriptions(pharmacy_id);
+CREATE INDEX IF NOT EXISTS idx_prescriptions_status ON prescriptions(status);
