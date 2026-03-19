@@ -1,6 +1,10 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+
+// Load .env only in development, not in production
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const authRoutes = require('./routes/authRoutes');
 const wearableRoutes = require('./routes/wearableRoutes');
