@@ -1,7 +1,8 @@
 const { Pool } = require('pg');
 
-// Load .env only in development, not in production
-if (process.env.NODE_ENV !== 'production') {
+// Only load .env if we're NOT on Render  
+// Render provides environment variables directly, doesn't use .env
+if (!process.env.RENDER) {
   require('dotenv').config();
 }
 
